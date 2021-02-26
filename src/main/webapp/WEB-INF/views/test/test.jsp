@@ -11,7 +11,7 @@
 <c:forEach items="${test}" var="test">
 	${test.test_no }
 	${test.name }
-	Test
+	Test to Test
 </c:forEach>	
 </body>
 </html>
