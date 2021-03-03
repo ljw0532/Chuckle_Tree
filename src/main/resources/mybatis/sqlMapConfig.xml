@@ -17,11 +17,13 @@ PUBLIC " - //mybatis.org//DTD Config 3.0//EN"
 			
 	<typeAliases>
 	<typeAlias alias="TestDTO" type="com.company.cktree.test.TestDTO"/>							
+	<typeAlias alias="MemberDTO" type="com.company.cktree.member.MemberDTO"/>						
 	</typeAliases>
 	
 	<!-- SQL 정의한 xml문서 Mapping -->
 	<mappers>
 		<mapper resource="mybatis/test-sql.xml" />
+		<mapper resource="mybatis/member-sql.xml" />
 	</mappers>
 	
 	
