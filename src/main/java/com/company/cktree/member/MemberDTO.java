@@ -12,6 +12,15 @@ public class MemberDTO {
 	private int penalty;
 	private int active;
 	private Date join_date;
+	private int birthday;
+	
+	
+	public int getBirthday() {
+		return birthday;
+	}
+	public void setBirthday(int birthday) {
+		this.birthday = birthday;
+	}
 	public int getM_no() {
 		return m_no;
 	}
