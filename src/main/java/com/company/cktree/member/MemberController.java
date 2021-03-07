@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class MemberController {
@@ -39,6 +40,7 @@ public class MemberController {
 			mav.addObject("member",m_dto);
 			mav.setViewName("main");
 		}else {
+
 			mav.addObject("msg","fail");
 			mav.setViewName("redirect:loginForm");
 		}
