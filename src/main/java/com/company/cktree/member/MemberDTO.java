@@ -2,23 +2,25 @@ package com.company.cktree.member;
 
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 public class MemberDTO {
 	private int m_no;
 	private String m_id;
-	private String password;
+	private String m_password;
 	private String m_name;
-	private int m_phone;
+	private String m_phone;
 	private String m_email;
 	private int penalty;
 	private int active;
 	private Date join_date;
-	private int birthday;
+	private String birthday;
 	
 	
-	public int getBirthday() {
+	public String getBirthday() {
 		return birthday;
 	}
-	public void setBirthday(int birthday) {
+	public void setBirthday(String birthday) {
 		this.birthday = birthday;
 	}
 	public int getM_no() {
@@ -33,11 +35,11 @@ public class MemberDTO {
 	public void setM_id(String m_id) {
 		this.m_id = m_id;
 	}
-	public String getPassword() {
-		return password;
+	public String getM_password() {
+		return m_password;
 	}
-	public void setPassword(String password) {
-		this.password = password;
+	public void setM_password(String m_password) {
+		this.m_password = m_password;
 	}
 	public String getM_name() {
 		return m_name;
@@ -45,10 +47,10 @@ public class MemberDTO {
 	public void setM_name(String m_name) {
 		this.m_name = m_name;
 	}
-	public int getM_phone() {
+	public String getM_phone() {
 		return m_phone;
 	}
-	public void setM_phone(int m_phone) {
+	public void setM_phone(String m_phone) {
 		this.m_phone = m_phone;
 	}
 	public String getM_email() {

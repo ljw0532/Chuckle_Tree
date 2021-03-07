@@ -3,6 +3,6 @@
 
 <mapper namespace="member">
 	<insert id="insertMember" parameterType="MemberDTO">
-		INSERT INTO member VALUES(member_seq.nextval,#{m_id},#{m_password},#{m_name},#{m_phone},#{m_eamil},0,0,sysdate) 	
+		INSERT INTO member VALUES(member_seq.nextval,#{m_id},#{m_password},#{m_name},#{m_phone},#{m_email},0,0,sysdate,#{birthday}) 	
 	</insert>
 </mapper>

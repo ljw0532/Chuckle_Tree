@@ -35,7 +35,7 @@
             short           : 'input is too short',
             long            : 'input is too long',
             checked         : 'must be checked',
-            empty           : 'please put something here',
+            empty           : '필수 항목입니다.',
             select          : 'Please select an option',
             number_min      : 'too low',
             number_max      : 'too high',
@@ -45,7 +45,7 @@
             email_repeat    : 'emails do not match',
             date            : 'invalid date',
             time            : 'invalid time',
-            password_repeat : 'passwords do not match',
+            password_repeat : '비밀번호가 일치하지 않습니다.',
             no_match        : 'no match',
             complete        : 'input is not complete'
         },

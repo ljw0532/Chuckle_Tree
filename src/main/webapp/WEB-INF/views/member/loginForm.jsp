@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,79 +28,42 @@
 
   <body class="login">
     <div>
-      <a class="hiddenanchor" id="signup"></a>
-      <a class="hiddenanchor" id="signin"></a>
-
       <div class="login_wrapper">
         <div class="animate form login_form">
           <section class="login_content">
-            <form>
+            <form:form commandName="member" method="post">
               <h1>Login Form</h1>
               <div>
-                <input type="text" class="form-control" placeholder="ID" required="" />
+                <input type="text" class="form-control" placeholder="ID" name="m_id"/>
               </div>
               <div>
-                <input type="password" class="form-control" placeholder="PASSWORD" required="" />
+                <input type="password" class="form-control" placeholder="PASSWORD" name="m_password" />
               </div>
               <div>
-                <a class="btn btn-default submit" href="index.html">로그인</a>
-                <a class="reset_pass" href="#">아이디 | 비밀번호 </a>
+                <button type="submit" class="btn btn-success">로그인</button>
+              
               </div>
 
               <div class="clearfix"></div>
 
               <div class="separator">
+                <a href="">아이디 찾기</a>|<a href=""> 비밀번호 찾기</a><br/>
                 <p class="change_link">첫 방문이신가요?
-                  <a href="<c:url value="joinForm"/>" class="to_register"> 회원가입 </a>
+                  <a href="<c:url value="joinForm"/>" class="to_register">  회원가입 </a>
                 </p>
 
                 <div class="clearfix"></div>
                 <br />
 
                 <div>
-                  <h1><i class="fa fa-paw"></i> Chuckle Tree!</h1>
+                 <a href="<c:url value="/" />"> <h1>Chuckle Tree!</h1></a>
                   <p>©2021 All Rights Reserved.</p>
                 </div>
               </div>
-            </form>
+            </form:form>
           </section>
         </div>
 
-        <div id="register" class="animate form registration_form">
-          <section class="login_content">
-            <form>
-              <h1>Create Account</h1>
-              <div>
-                <input type="text" class="form-control" placeholder="Username" required="" />
-              </div>
-              <div>
-                <input type="email" class="form-control" placeholder="Email" required="" />
-              </div>
-              <div>
-                <input type="password" class="form-control" placeholder="Password" required="" />
-              </div>
-              <div>
-                <a class="btn btn-default submit" href="index.html">Submit</a>
-              </div>
-
-              <div class="clearfix"></div>
-
-              <div class="separator">
-                <p class="change_link">Already a member ?
-                  <a href="#signin" class="to_register"> Log in </a>
-                </p>
-
-                <div class="clearfix"></div>
-                <br />
-
-                <div>
-                  <h1><i class="fa fa-paw"></i> Gentelella Alela!</h1>
-                  <p>©2016 All Rights Reserved. Gentelella Alela! is a Bootstrap 3 template. Privacy and Terms</p>
-                </div>
-              </div>
-            </form>
-          </section>
-        </div>
       </div>
     </div>
   </body>

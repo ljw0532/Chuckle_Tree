@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -112,9 +113,7 @@
                     <nav class="nav navbar-nav">
                         <ul class=" navbar-right">
                             <li class="nav-item dropdown open" style="padding-left: 15px;">
-                                <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
-                                    <img src="images/img.jpg" alt="">John Doe
-                                </a>
+                            
                                 <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
                                     <a class="dropdown-item" href="javascript:;"> Profile</a>
                                     <a class="dropdown-item" href="javascript:;">
@@ -213,12 +212,12 @@
                             <div class="x_panel">
                                 
                                 <div class="x_content">
-                                    <form class="" action="" method="post" novalidate>                              
+                                    <form:form commandName="member" method="post">                              
                                       <span class="section">개인정보</span>
                                            <div class="field item form-group">
                                             <label class="col-form-label col-md-3 col-sm-3  label-align">아이디<span class="required">*</span></label>
                                             <div class="col-md-6 col-sm-6">
-                                                <input class="form-control" data-validate-length-range="6" data-validate-words="2" name="ID" required="required" />
+                                                <input class="form-control" name="m_id"/>
                                             </div>
                                         </div>
                                        
@@ -226,39 +225,34 @@
                                         <div class="field item form-group">
 											<label class="col-form-label col-md-3 col-sm-3  label-align">비밀번호<span class="required">*</span></label>
 											<div class="col-md-6 col-sm-6">
-												<input class="form-control" type="password" id="password1" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}" title="Minimum 8 Characters Including An Upper And Lower Case Letter, A Number And A Unique Character" required />
+												<input class="form-control" type="password" id="m_password" name="m_password"/>											
 												
-												<span style="position: absolute;right:15px;top:7px;" onclick="hideshow()" >
-													<i id="slash" class="fa fa-eye-slash"></i>
-													<i id="eye" class="fa fa-eye"></i>
-												</span>
 											</div>
 										</div>
                                         
-                                        <div class="field item form-group">
+                                    <!--     <div class="field item form-group">
                                             <label class="col-form-label col-md-3 col-sm-3  label-align">비밀번호 확인<span class="required">*</span></label>
                                             <div class="col-md-6 col-sm-6">
-                                                <input class="form-control" type="password" name="password2" data-validate-linked='password' required='required' /></div>
-                                        </div>
+                                                <input class="form-control" type="password" name="password2" data-validate-linked='password'/></div>
+                                        </div> -->
                                         
                                         <div class="field item form-group">
                                             <label class="col-form-label col-md-3 col-sm-3  label-align">이름<span class="required">*</span></label>
                                             <div class="col-md-6 col-sm-6">
-                                                <input class="form-control" data-validate-length-range="6" data-validate-words="2" name="name" required="required" />
+                                                <input class="form-control" name="m_name" />
                                             </div>
                                         </div>
                                        
                                         <div class="field item form-group">
                                             <label class="col-form-label col-md-3 col-sm-3  label-align">이메일<span class="required">*</span></label>
                                             <div class="col-md-6 col-sm-6">
-                                                <input class="form-control" name="email" class='email' required="required" type="email" /></div>
-                                        </div>
-                                        
+                                                <input class="form-control" name="m_email" class='email'  type="email" /></div>
+                                        </div> 
                          
                                         <div class="field item form-group">
                                             <label class="col-form-label col-md-3 col-sm-3  label-align">생년월일<span class="required">*</span></label>
                                             <div class="col-md-6 col-sm-6">
-                                                <input class="form-control" class='date' type="date" name="date" required='required'></div>
+                                                <input class="form-control" class='date' type="text" name="birthday" ></div>
                                         </div>
                                        
                                         
@@ -266,7 +260,7 @@
                                         <div class="field item form-group">
                                             <label class="col-form-label col-md-3 col-sm-3  label-align">핸드폰번호<span class="required">*</span></label>
                                             <div class="col-md-6 col-sm-6">
-                                                <input class="form-control" type="tel" class='tel' name="phone" required='required' data-validate-length-range="8,20" /></div>
+                                                <input class="form-control" type="tel" class='tel' name="m_phone"/></div>
                                         </div>
                                                          
                                         <div class="ln_solid">
@@ -277,7 +271,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </form>
+                                  </form:form>
                                 </div>
                             </div>
                         </div>
@@ -317,32 +311,6 @@
 		}
 	</script>
 
-    <script>
-        // initialize a validator instance from the "FormValidator" constructor.
-        // A "<form>" element is optionally passed as an argument, but is not a must
-        var validator = new FormValidator({
-            "events": ['blur', 'input', 'change']
-        }, document.forms[0]);
-        // on form "submit" event
-        document.forms[0].onsubmit = function(e) {
-            var submit = true,
-                validatorResult = validator.checkAll(this);
-            console.log(validatorResult);
-            return !!validatorResult.valid;
-        };
-        // on form "reset" event
-        document.forms[0].onreset = function(e) {
-            validator.reset();
-        };
-        // stuff related ONLY for this demo page:
-        $('.toggleValidationTooltips').change(function() {
-            validator.settings.alerts = !this.checked;
-            if (this.checked)
-                $('form .alert').remove();
-        }).prop('checked', false);
-
-    </script>
-
     <!-- jQuery -->
     <script src="${pageContext.request.contextPath}/resources/gentelella-master/vendors/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap -->
@@ -351,9 +319,6 @@
     <script src="${pageContext.request.contextPath}/resources/gentelella-master/vendors/fastclick/lib/fastclick.js"></script>
     <!-- NProgress -->
     <script src="${pageContext.request.contextPath}/resources/gentelella-master/vendors/nprogress/nprogress.js"></script>
-    <!-- validator -->
-    <!-- <script src="${pageContext.request.contextPath}/resources/gentelella-master/vendors/validator/validator.js"></script> -->
-
     <!-- Custom Theme Scripts -->
     <script src="${pageContext.request.contextPath}/resources/gentelella-master/build/js/custom.min.js"></script>
 
