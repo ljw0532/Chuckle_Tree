@@ -2,7 +2,13 @@
 <!DOCTYPE mapper PUBLIC " - //mybatis.org//DTD Config 3.0//EN" " http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="member">
+	<!-- 회원가입 -->
 	<insert id="insertMember" parameterType="MemberDTO">
 		INSERT INTO member VALUES(member_seq.nextval,#{m_id},#{m_password},#{m_name},#{m_phone},#{m_email},0,0,sysdate,#{birthday}) 	
 	</insert>
+	
+	<!-- 아이디 비밀번호 체크 -->
+	<select id="loginCheck" resultType="MemberDTO" parameterType="MemberDTO">
+		SELECT m_no, m_id, m_password, m_name FROM member WHERE m_id=#{m_id} AND m_password = #{m_password}
+	</select>
 </mapper>
