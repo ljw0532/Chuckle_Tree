@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " - //mybatis.org//DTD Config 3.0//EN" " http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="member">
+	<!-- 회원가입 -->
+	<insert id="insertMember" parameterType="MemberDTO">
+		INSERT INTO 
+		member(m_no,m_id,m_password,m_name,m_phone,m_email,penalty,active,join_date,birthday,zipcode,address) 
+		VALUES(member_seq.nextval,#{m_id},#{m_password},#{m_name},#{m_phone},#{m_email},0,'Y',sysdate,#{birthday},#{zipcode},#{address}) 	
+	</insert>
+	
+	<!-- 아이디 비밀번호 체크 -->
+	<select id="loginCheck" resultType="MemberDTO" parameterType="MemberDTO">
+		SELECT
+		 m_no, m_id, m_password, m_name, m_image,active 
+		FROM 
+			member 
+		WHERE 
+			m_id=#{m_id} AND m_password = #{m_password}
+	</select>
+	
+	<!-- 자동로그인 기간설정 -->
+	<update id="keepLogin">
+		UPDATE 
+			member
+		SET
+			SESSION_ID = #{session_id},
+			SESSION_LIMIT = #{session_limit}
+		where
+			m_id = #{m_id}
+	</update>
+	
+	<!-- 자동로그인 유효한지 조회 -->
+	<select id="checkUserWithSessionKey" parameterType="String" resultType="hashmap">
+		SELECT
+			m_no, m_id, m_password, m_name, m_phone, m_email, session_id, m_image
+		FROM
+			member
+		WHERE
+			session_id= #{session_id} AND session_limit > sysdate
+	</select>
+	
+	<!-- 아이디 찾기 -->
+	<select id="findId" resultType="MemberDTO">
+		SELECT
+			m_id
+		FROM
+			member
+		WHERE
+			m_name=#{m_name} AND m_email=#{m_email}
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<select id="findPw" resultType="MemberDTO">
+		SELECT
+			m_password,m_name
+		FROM
+			member
+		WHERE
+			m_id=#{m_id} AND m_email=#{m_email}
+	</select>
+	
+	<!-- 아이디 중복 검사 -->
+	<select id="checkId" resultType="Integer">
+		SELECT count(*)
+		FROM member
+		WHERE m_id = #{m_id}
+	</select> 
+	
+	<!-- 이메일 중복 검사 -->
+	<select id="checkEmail" resultType="Integer">
+		SELECT count(*)
+		FROM member
+		WHERE m_email = #{m_email}
+	</select> 
+	
+	<!-- 나의 정보 조회 -->
+	<select id="memberInfo" resultType="MemberDTO">
+		SELECT * 
+		FROM member
+		WHERE m_no = #{m_no}
+	</select>
+	
+	<!-- 회원 정보 수정 -->
+	<update id="memberModify">
+		UPDATE member
+		SET m_phone=#{m_phone},address=#{address},m_email=#{m_email},m_image=#{m_image}
+		WHERE m_no = #{m_no}
+	</update>
+	
+	<!-- 회원탈퇴 -->
+	<delete id="leaveId">
+		DELETE 
+		FROM member
+		WHERE m_no = #{m_no}
+	</delete>
+	
+	<!-- 로그인시 아이디가 있는지 없는지 검사 -->
+	<select id="loginIdCheck" resultType="MemberDTO">
+		SELECT m_id
+		FROM member
+		WHERE m_id=#{m_id}
+	</select>
+	
+	<!-- 현재 내가 쓰고 있는 이메일인지 확인 -->
+	<select id="usingEmail" resultType="String">
+		SELECT m_email
+		FROM member
+		WHERE m_no=#{m_no} and m_email=#{m_email}
+	</select>
+	
+	<!-- myProfile에서 쓸 SQL -->
+	<!-- 내가 쓴 글 -->
+	<select id="myPosts" resultType="BoardDTO">		
+		<include refid="paging_header"/>	
+			SELECT rownum,b_no,b_title,b_date
+			FROM board
+			WHERE m_no = #{m_no}
+			ORDER BY b_no DESC
+		<include refid="paging_footer"/>
+	</select>
+	
+	<!-- 내가 쓴 댓글 -->
+	<select id="myComments" resultType="CommentsDTO">
+		<include refid="paging_header"/>	
+			SELECT rownum,c_no,c_content,c_date,b_no
+			FROM comments
+			WHERE m_no = #{m_no}
+			ORDER BY c_no DESC
+		<include refid="paging_footer"/>
+	</select>
+	
+	<!-- 내가 누른 좋아요 -->
+	<select id="myLikeit" resultType="BoardDTO">
+		<include refid="paging_header"/>	
+			SELECT rownum,likeit.b_no,b_title,b_writer,board.m_no
+			FROM board RIGHT OUTER JOIN likeit ON board.b_no = likeit.b_no 
+			WHERE likeit.m_no = #{m_no}
+			ORDER BY likeit.b_no DESC
+		<include refid="paging_footer"/>
+	</select>
+	
+	<!-- 프로필 이미지 가져오기-->
+	<select id="selectMyProfileImage" resultType="String">
+		SELECT m_image
+		FROM member
+		WHERE m_no=#{m_no}		
+	</select>
+	
+	<!-- 비밀번호 변경 -->
+	<update id="pwChange">
+		UPDATE member
+		SET m_password=#{m_password}
+		WHERE m_no=#{m_no}
+	</update>
+	
+	<!-- 현재 내가 쓰고 있는 비밀번호 인지 확인 -->
+	<select id="checkMyPw" resultType="String">
+		SELECT m_password
+		FROM member
+		WHERE m_no=#{m_no} AND m_password=#{m_password}
+	</select>
+	
+	<!-- 회원정보 조회 -->
+	<select id="selectUserInfo" resultType="MemberDTO">
+		SELECT m_no,m_name,m_email,m_phone,address,penalty,birthday,m_image,join_date,m_id,active
+		FROM member
+		WHERE m_no=#{m_no}
+	</select>
+
+	<!-- 다른 회원이 쓴 글 조회하기 위한 id,no값  -->
+	<select id="selectNoId" resultType="MemberDTO">
+		SELECT m_no, m_name
+		FROM member
+		WHERE m_no = #{m_no}
+	</select>
+	
+	<!-- 비활성 회원인지 체크 -->
+	<select id="inactiveMemberCheck" resultType="String">
+		SELECT active
+		 FROM member
+		 WHERE m_no = #{m_no}
+	</select>
+	
+	
+	<!-- 핸드폰 중복 검사 -->
+	<select id="checkPhone" resultType="String">
+	SELECT m_phone FROM member
+	WHERE m_phone=#{m_phone}
+	</select>
+	
+	<!--리스트 헤더 -->
+	<sql id="paging_header">
+		SELECT * FROM(SELECT rownum as rn, A.* FROM(
+	</sql>
+
+	<!--리스트 푸터 -->
+	<sql id="paging_footer">
+			)A
+		) WHERE rn between 1 AND #{end}
+	</sql>
+	
+</mapper>

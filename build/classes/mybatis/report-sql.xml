@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " - //mybatis.org//DTD Config 3.0//EN" " http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="report">
+<!-- 신고insert -->
+<insert id="insertReport">
+	INSERT INTO 
+		report(report_no,report_content,report_date,m_no,m_name,reporter_no,reporter_name) 
+	VALUES
+		(report_seq.nextval,#{report_content},sysdate,#{m_no},#{m_name},#{reporter_no},#{reporter_name})
+</insert>
+
+<!-- 전체 신고내역 조회 -->
+<select id="selectReportList" resultType="ReportDTO">
+	<include refid="paging_header"/>
+	SELECT rownum,m_name,m_no,report_content,report_date,report_no,reporter_no,reporter_name 
+		FROM report WHERE comdate IS NULL ORDER BY report_date DESC
+		<include refid="paging_footer"/>
+</select>
+
+<!-- 신고내역 조회 갯수 -->
+<select id="countReportList" resultType="int">
+	SELECT count(*)
+		FROM report
+		WHERE comdate IS NOT NULL
+</select>
+
+<!-- 페널티부여후 완료시간 업데이트 -->
+<update id="completePenaltyDate">
+	UPDATE report
+	SET comdate = sysdate
+	WHERE report_no = #{report_no}
+</update>
+
+<!-- 회원에게 페널티부여 -->
+<update id="givePenalty">
+	UPDATE member SET penalty = penalty+1
+	WHERE m_no = #{m_no}
+</update>
+
+<!-- 페널티가 5이상인 회원의 active컬럼 비활성으로 update -->
+<update id="inactiveMember">
+	UPDATE member
+	SET active = 'N'
+	WHERE  m_no = #{m_no} and penalty >= 5
+</update>
+<!--  리스트 헤더 -->
+<sql id="paging_header">
+	SELECT * FROM(SELECT rownum as rn, A.* FROM(
+</sql>
+
+<!-- 리스트 푸터 (페이징)  -->
+<sql id="paging_footer">
+	)A
+) WHERE rn between #{start} AND #{end}
+</sql>
+
+</mapper>
+

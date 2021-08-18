@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.3.xsd
+		http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan
+		base-package="com.company.*" />
+
+	<annotation-driven />
+	<!-- 이미지 파일 경로 -->
+	<resources mapping="/upload/**" location="/resources/upload/"/>
+	<resources mapping="/images/**" location="/resources/images/"/>
+	<resources mapping="/resources/**" location="/resources/"/>
+	
+	<beans:bean id="validator" class="com.company.cktree.validator.JoinRequestValidator" />
+	<beans:bean id="memberModifyVal" class="com.company.cktree.validator.JoinRequestValidator" />
+	
+	<beans:bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>	
+	
+	<!-- 파일업로드 빈 -->
+	<beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<beans:property name="maxUploadSize" value="107374180" />
+	</beans:bean>
+
+
+	<!-- 파일 업로드 디렉토리 설정 -->
+	<beans:bean id="uploadPath" class="java.lang.String">
+		<beans:constructor-arg value="C:/project/Chuckle_Tree/src/main/webapp/resources/upload" />
+	</beans:bean>
+	
+	<!-- 프로필 이미지 디렉토리 설정 -->
+	<beans:bean id="profileImagePath" class="java.lang.String">
+		<beans:constructor-arg value="C:/project/Chuckle_Tree/src/main/webapp/resources/images" />
+	</beans:bean>
+	
+	<!-- 인터셉터 -->
+	<beans:bean id="loginInterceptor" class="com.company.cktree.interceptor.LoginInterceptor"></beans:bean>
+	<interceptors>
+		<interceptor>
+			<mapping path="/**"/>
+			<beans:ref bean="loginInterceptor"/>
+		</interceptor>
+	</interceptors>
+	
+	<!-- 세션 인터셉터 (세션이 없으면 들어갈 수 없는 페이지들)-->
+	<beans:bean id="sessionInterceptor" class="com.company.cktree.interceptor.SessionInterceptor"></beans:bean>
+	<interceptors>
+		<interceptor>
+			<mapping path="/member/myProfile/*"/>
+			<mapping path="/board/boardWrite"/>
+			<mapping path="/board/boardUpdateForm"/>
+			<mapping path="/reportForm/*"/>
+			<mapping path="/admin/selectReportList"/>
+			<beans:ref bean="sessionInterceptor"/>
+		</interceptor>
+	</interceptors>
+	
+	<!-- 로그인 완료시 들어가면 안되는 페이지 -->
+	<beans:bean id="loginComInterceptor" class="com.company.cktree.interceptor.LoginComInterceptor"></beans:bean>
+	<interceptors>
+		<interceptor>
+			<mapping path="/loginForm"/>
+			<mapping path="/joinForm"/>
+			<mapping path="/findId"/>
+			<mapping path="/findPw"/>
+			<mapping path="/join"/>
+			<beans:ref bean="loginComInterceptor"/>
+		</interceptor>
+	</interceptors>
+	
+	<!-- 웹소켓 핸들러 -->
+	<beans:bean id="echoHandler" class="com.company.cktree.socket.EchoHandler" />
+	<websocket:handlers allowed-origins="*">
+		<websocket:mapping handler="echoHandler" path="/echo"/>
+		<websocket:handshake-interceptors>
+			<beans:bean class="org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor"/>
+		</websocket:handshake-interceptors>	
+		<websocket:sockjs websocket-enabled="true"/>
+	</websocket:handlers>
+	
+
+</beans:beans>

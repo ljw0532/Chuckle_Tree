@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration 
+PUBLIC " - //mybatis.org//DTD Config 3.0//EN"
+	   " http://mybatis.org/dtd/mybatis-3-config.dtd">
+	   
+	  <configuration>
+	   		<!-- mybatis 기본 세팅 -->
+			<settings>
+				<setting name="cacheEnabled"              value="true"/>  
+		        <setting name="lazyLoadingEnabled"        value="false"/>  
+		        <setting name="multipleResultSetsEnabled" value="true"/>  
+		        <setting name="useColumnLabel"            value="true"/>  
+		        <setting name="useGeneratedKeys"          value="false"/>  
+		        <setting name="defaultExecutorType"       value="SIMPLE"/>  
+		        <setting name="defaultStatementTimeout"   value="25000"/>  
+			</settings>
+			
+	<typeAliases>						
+	<typeAlias alias="MemberDTO" type="com.company.cktree.member.MemberDTO"/>			
+	<typeAlias alias="BoardDTO" type="com.company.cktree.board.BoardDTO"/>	
+	<typeAlias alias="CommentsDTO" type="com.company.cktree.comments.CommentsDTO"/>	
+	<typeAlias alias="NotifyDTO" type="com.company.cktree.notifications.NotifyDTO"/>
+	<typeAlias alias="AuthenDTO" type="com.company.cktree.authentications.AuthenDTO"/>	
+	<typeAlias alias="ReportDTO" type="com.company.cktree.report.ReportDTO"/>				
+	</typeAliases>
+	
+	<!-- SQL 정의한 xml문서 Mapping -->
+	<mappers>
+		<mapper resource="mybatis/member-sql.xml" />
+		<mapper resource="mybatis/board-sql.xml"/>
+		<mapper resource="mybatis/notifications-sql.xml"/>
+		<mapper resource="mybatis/authentications-sql.xml"/>
+		<mapper resource="mybatis/report-sql.xml"/>
+	</mappers>
+	
+	
+	</configuration>

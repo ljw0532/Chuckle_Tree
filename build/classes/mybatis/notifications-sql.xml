@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " - //mybatis.org//DTD Config 3.0//EN" " http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="notify">
+
+
+<insert id="insertNotify" parameterType="hashMap">
+INSERT INTO notifications
+	(n_no,n_index,m_no,gen_m_no,gen_m_name,b_no,n_content,regdate)
+VALUES
+	(notifications_seq.nextval,#{n_index},#{m_no},#{gen_m_no},#{gen_m_name},#{b_no},#{n_content},sysdate)
+</insert>
+
+<select id="selectNotify" resultType="NotifyDTO">
+	SELECT * FROM(SELECT rownum as rn, A.* FROM(
+		SELECT rownum,n_no,n_index,m_no,gen_m_no,gen_m_name,b_no,n_content,regdate,readdate FROM notifications
+			WHERE m_no = #{m_no}
+		ORDER BY regdate DESC)A
+) WHERE rn between 1 AND #{end}
+</select>
+
+<update id="updateReadDate">
+UPDATE notifications
+SET readdate = sysdate
+WHERE n_no = #{n_no}
+</update>
+
+<select id="selectNotifyOne" resultType="NotifyDTO">
+SELECT * FROM notifications
+WHERE n_no = #{n_no}
+</select>
+
+<select id="countNotify" resultType="int">
+SELECT count(*) FROM
+notifications 
+WHERE m_no = #{m_no} AND readdate IS NULL
+</select>
+
+<delete id="deleteNotify">
+DELETE 
+FROM 
+notifications 
+WHERE n_no = #{n_no}
+</delete>
+</mapper>

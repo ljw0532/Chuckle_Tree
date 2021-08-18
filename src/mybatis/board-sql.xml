@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " - //mybatis.org//DTD Config 3.0//EN" " http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="board">
+<!-- fun게시판 리스트 -->
+<select id="funBoardList" resultType="BoardDTO">
+	<include refid="paging_header"/>
+	SELECT rownum,a.b_no,b_writer,b_content,b_cnt,b_title,b_date,m_no
+	FROM board a 
+	LEFT OUTER JOIN 
+	( select b_no from likeit group by b_no having count(*) >= 3
+      	UNION
+      select b_no from dislike group by b_no having count(*) >= 3 ) b
+    ON a.b_no = b.b_no 
+	<choose>
+	<when test="searchOption == 'all'">
+		WHERE b.b_no IS NULL 
+		AND ( b_writer LIKE '%'||#{keyword}||'%'
+		OR b_content LIKE '%'||#{keyword}||'%'
+		OR b_title LIKE '%'||#{keyword}||'%')
+	</when>
+	<otherwise>
+		WHERE b.b_no IS NULL 
+		AND (${searchOption} LIKE '%'||#{keyword}||'%')
+	</otherwise>
+	</choose>
+	ORDER BY b_no DESC
+	<include refid="paging_footer"/>
+</select>
+
+<!-- 게시글 insert -->
+<insert id="boardWrite" parameterType="BoardDTO">
+	<![CDATA[
+	INSERT INTO board(b_no,b_title,b_writer,b_file,m_no,b_date,file_count,b_content)
+	VALUES(board_seq.nextval,#{b_title},#{b_writer},#{b_file},#{m_no},sysdate,#{file_count},#{b_content})
+	]]>
+</insert>
+
+<!-- 페이지 리스트 -->
+<select id="pagingList" resultType="int" parameterType="hashmap">
+	SELECT count(*)
+		FROM board a
+ 	 LEFT OUTER JOIN 
+	( select b_no from likeit group by b_no having count(*) >= 3
+      	UNION
+      select b_no from dislike group by b_no having count(*) >= 3 ) b
+    ON a.b_no = b.b_no 
+<choose>
+	<when test="searchOption == 'all'">
+		WHERE b.b_no IS NULL 
+		AND ( b_writer LIKE '%'||#{keyword}||'%'
+		OR b_content LIKE '%'||#{keyword}||'%'
+		OR b_title LIKE '%'||#{keyword}||'%')
+	</when>
+	<otherwise>
+		WHERE b.b_no IS NULL 
+		AND (${searchOption} LIKE '%'||#{keyword}||'%')
+	</otherwise>
+	</choose>
+</select>
+
+
+<!-- 게시판 상세 -->
+<select id="funBoardDetail" resultType="Hashmap" parameterType="int" resultMap="clob">
+	SELECT * 
+	FROM board
+	WHERE b_no = #{b_no}
+</select>
+
+<!-- 게시판 상세 내용 (CLOB처리)-->
+<resultMap type="HashMap" id="clob">
+	<result property="b_content" column="b_content" jdbcType="CLOB" javaType="java.lang.String"/>
+</resultMap>
+
+<!-- 조회수 -->
+<update id="detailCnt">
+	UPDATE board
+	SET b_cnt = b_cnt+1
+	WHERE b_no = #{b_no}
+</update>
+
+<!-- 좋아요 insert -->
+<insert id="insertLikeit">
+	INSERT INTO
+	likeit(l_no,b_no,m_no)
+	VALUES(likeit_seq.nextval,#{b_no},#{m_no})
+</insert>
+
+<!-- 좋아요 누른 회원인지 확인 -->
+<select id="selectLikeitExist" resultType="hashMap" parameterType="hashMap">
+	SELECT * 
+	FROM Likeit 
+	WHERE b_no=#{b_no} AND m_no=#{m_no}
+</select>
+
+<!-- 좋아요 취소 -->
+<delete id="deleteLikeit">
+	DELETE 
+	FROM likeit
+	WHERE b_no=#{b_no} AND m_no=#{m_no}
+</delete>
+
+<!-- 좋아요 갯수 -->
+<select id="countLikeit" resultType="int">
+	SELECT count(*) AS like_count
+	FROM likeit
+	WHERE b_no=#{b_no}
+</select>
+
+<!-- 싫어요 insert -->
+<insert id="insertDislike">
+	INSERT INTO
+	dislike(dl_no,b_no,m_no)
+	VALUES(dislike_seq.nextval,#{b_no},#{m_no})
+</insert>
+
+<!-- 싫어요 누른 회원인지 확인 -->
+<select id="selectDislikeExist" resultType="hashMap" parameterType="hashMap">
+	SELECT * 
+	FROM dislike 
+	WHERE b_no=#{b_no} AND m_no=#{m_no}
+</select>
+
+<!-- 싫어요 취소 -->
+<delete id="deleteDislike">
+	DELETE 
+	FROM dislike
+	WHERE b_no=#{b_no} AND m_no=#{m_no}
+</delete>
+
+<!-- 싫어요 갯수 -->
+<select id="countDislike" resultType="int">
+	SELECT count(*) AS dislike_count
+	FROM dislike
+	WHERE b_no=#{b_no}
+</select>
+
+<!-- 댓글 작성 -->
+<insert id="writeComments">
+	INSERT INTO comments(c_no,c_writer,c_content,b_no,m_no,c_date,c_parent,c_depth,c_group)
+	VALUES (
+	comments_seq.nextval,#{c_writer},#{c_content},#{b_no},#{m_no},sysdate,
+	<choose>
+	<when test="c_parent!=0">
+		#{c_parent},
+		(SELECT c_depth+1 c_depth FROM comments WHERE c_no=#{c_parent}),
+		#{c_group} )
+	</when>
+		<otherwise>
+		0,
+		0,
+	    comments_seq.nextval )
+		</otherwise>
+	</choose>
+</insert>
+
+<!-- 댓글 리스트 -->
+<select id="commentsList" resultType="commentsDTO">
+SELECT * 
+FROM ( SELECT rownum as rn, A.* FROM(
+  SELECT rownum,c_no,c_writer,c_content,b_no,m_no,c_date,c_parent,c_depth,c_group 
+  FROM comments 
+  WHERE b_no = #{b_no} ORDER BY c_group ASC, c_date ASC ) A 
+) WHERE rn BETWEEN 1 AND #{end}
+</select>
+<!-- 댓글 수정 -->
+<update id="commentsUpdate">
+	UPDATE comments
+	SET c_content=#{c_content}
+	WHERE c_no=#{c_no}
+</update>
+
+<!-- 댓글 삭제 -->
+<delete id="commentsDelete">
+DELETE FROM comments
+WHERE 
+<choose>
+	<when test="c_parent != 0">
+		c_no = #{c_no}
+	</when>
+	<otherwise>
+		c_group = #{c_group}
+	</otherwise>
+</choose>
+</delete>
+
+<!-- 댓글 갯수 -->
+<select id="countComments" resultType="int">
+SELECT count(*)
+FROM comments
+WHERE b_no = #{b_no}
+</select>
+
+<!-- 게시글 수정 -->
+<update id="boardUpdate">
+UPDATE board
+SET b_title=#{b_title},b_content=#{b_content},b_file=#{b_file}
+WHERE b_no=${b_no}
+</update>
+
+<!-- 게시글 삭제 -->
+<delete id="boardDelete">
+DELETE FROM board
+WHERE b_no=#{b_no}
+</delete>
+
+<!-- 베스트 게시물 리스트 (좋아요가 3개이상인 게시물) -->
+<select id="bestBoardList" resultType="BoardDTO">
+<include refid="paging_header"/>
+SELECT 
+ rownum,a.b_no,b_title,b_writer,b_date,m_no 
+FROM 
+ board a RIGHT OUTER JOIN 
+  ( <include refid="moreThanThreeLikeit"/>  ) b 
+ON 
+ a.b_no = b.b_no
+ <include refid="search"/>
+ ORDER BY b_date DESC
+ <include refid="paging_footer"/>
+</select>
+
+<!-- 베스트 게시물  갯수 -->
+<select id="countBestBoardList" resultType="int">
+SELECT count(*) FROM (SELECT 
+ 	rownum,a.b_no,b_title,b_writer,b_date 
+FROM 
+ board a RIGHT OUTER JOIN 
+  ( <include refid="moreThanThreeLikeit"/> ) b 
+ON 
+ a.b_no = b.b_no)
+</select> 
+
+<!-- 워스트 게시물 리스트 (싫어요가 3개이상인 게시물 -->
+<select id="worstBoardList" resultType="BoardDTO">
+<include refid="paging_header"/>
+	SELECT 
+ 		rownum,a.b_no,b_title,b_writer,b_date,m_no
+	FROM 
+ 		board a RIGHT OUTER JOIN 
+  	( <include refid="moreThanThreeDislike"/>  ) b 
+	ON 
+ 		a.b_no = b.b_no
+ 	<include refid="search"/>
+ 		ORDER BY b_date DESC
+ 	<include refid="paging_footer"/>
+</select>
+
+<!-- 워스트 게시물  갯수 -->
+<select id="countWorstBoardList" resultType="int">
+SELECT count(*) FROM (SELECT 
+ 	rownum,a.b_no,b_title,b_writer,b_date 
+FROM 
+ board a RIGHT OUTER JOIN 
+  ( <include refid="moreThanThreeDislike"/> ) b 
+ON 
+ a.b_no = b.b_no)
+</select> 
+
+<!-- fun 게시판 리스트 헤더 -->
+<sql id="paging_header">
+	SELECT * FROM(SELECT rownum as rn, A.* FROM(
+</sql>
+
+<!--fun게시판리스트 푸터 (페이징)  -->
+<sql id="paging_footer">
+	)A
+) WHERE rn between #{start} AND #{end}
+</sql>
+
+<!-- 검색 -->
+<sql id="search">
+<choose>
+	<when test="searchOption == 'all'">
+		WHERE b_writer LIKE '%'||#{keyword}||'%'
+		OR b_content LIKE '%'||#{keyword}||'%'
+		OR b_title LIKE '%'||#{keyword}||'%'
+	</when>
+	<otherwise>
+		WHERE ${searchOption} LIKE '%'||#{keyword}||'%'
+	</otherwise>
+</choose>
+</sql>
+
+
+<!-- 좋아요가 3개이상이고 싫어요가 3미만인 b_no를 가져오는 서브쿼리 -->
+<sql id="moreThanThreeLikeit">
+<![CDATA[
+  SELECT 
+ 	c.b_no
+  FROM 
+ 	(select count(*) as count, b_no from likeit group by b_no ) c 
+  FULL OUTER JOIN 
+    (select count(*) as count,b_no from dislike group by b_no) d 
+  ON 
+ 	c.b_no = d.b_no
+  WHERE 
+  	c.count >= 3 and nvl(d.count,0) <= 3
+ 	]]>
+</sql>
+
+<!-- 싫어요가 3개이상이고 좋아요가 3미만인 b_no를 가져오는 서브쿼리 -->
+<sql id="moreThanThreeDislike">
+	<![CDATA[
+  SELECT 
+ 	d.b_no
+  FROM 
+ 	(select count(*) as count, b_no from likeit group by b_no ) c 
+  FULL OUTER JOIN 
+    (select count(*) as count,b_no from dislike group by b_no) d 
+  ON 
+ 	c.b_no = d.b_no
+  WHERE 
+  	d.count >= 3 and nvl(c.count,0) <= 3
+ 	]]>
+</sql>
+
+<!-- Main에서 쓸 게시판 리스트 -->
+<select id="mainBestBoardList" resultType="BoardDTO">
+<![CDATA[
+	SELECT a.b_no,b_title,b_writer,b_date,m_no,nvl(b.com_count,0) as comments_count
+		FROM 
+ 			board a RIGHT OUTER JOIN 
+  		( SELECT 
+ 			c.b_no,e.count as com_count
+ 		  FROM 
+ 			(select count(*) as count, b_no from likeit group by b_no ) c 
+  		  FULL OUTER JOIN 
+    		(select count(*) as count,b_no from dislike group by b_no) d 
+  		  ON 
+ 			c.b_no = d.b_no
+  		  FULL OUTER JOIN
+  			(select count(*) as count,b_no from comments group by b_no) e
+  		  ON
+  			c.b_no = e.b_no
+  		  WHERE 
+  			c.count >= 3 and nvl(d.count,0) <= 3  ) b 
+		  ON 
+ 			a.b_no = b.b_no 
+ 	ORDER BY b_date DESC
+ ]]>
+</select>
+
+<select id="mainFunBoardList" resultType="BoardDTO">
+	<![CDATA[
+	SELECT 
+		A.b_no as b_no, A.b_writer, A.b_content, A.b_title, A.b_date, A.m_no, nvl(B.count,0) as comments_count
+		FROM
+		 ( SELECT 
+		 	a.b_no as b_no,b_writer,b_content,b_cnt,b_title,b_date,m_no
+			FROM 
+			 board 
+			 	a LEFT OUTER JOIN 
+			( select b_no from likeit group by b_no having count(*) >= 3 UNION select b_no from dislike group by b_no having count(*) >= 3 ) b
+   				ON a.b_no = b.b_no 
+    			WHERE b.b_no IS NULL ) A 
+   			FULL OUTER JOIN 
+   			( select count(*) as count,b_no from comments group by b_no) B
+    		ON A.b_no = B.b_no
+    	WHERE A.b_no is not null
+    ORDER BY A.b_date DESC
+    ]]>
+</select>
+
+<select id="mainWorstBoardList" resultType="BoardDTO">
+<![CDATA[
+	SELECT a.b_no,b_title,b_writer,b_date,m_no,nvl(b.com_count,0) as comments_count
+		FROM 
+ 			board a RIGHT OUTER JOIN 
+  		( SELECT 
+ 			d.b_no,e.count as com_count
+ 		  FROM 
+ 			(select count(*) as count, b_no from likeit group by b_no ) c 
+  		  FULL OUTER JOIN 
+    		(select count(*) as count,b_no from dislike group by b_no) d 
+  		  ON 
+ 			c.b_no = d.b_no
+  		  FULL OUTER JOIN
+  			(select count(*) as count,b_no from comments group by b_no) e
+  		  ON
+  			d.b_no = e.b_no
+  		  WHERE 
+  			d.count >= 3 and nvl(c.count,0) <= 3  ) b 
+		  ON 
+ 			a.b_no = b.b_no 
+ 	ORDER BY b_date DESC
+ ]]>
+</select>
+ <!-- Main에서 쓸 게시판 리스트 끝 -->
+ <!-- Main리스트들 보충 설명 -->
+<!-- BEST,WORST게시판은 기존에 사용하던 쿼리에서 서브쿼리 b부분에 댓글갯수를 
+	select하는 쿼리을 추가로 FULL OUTER JOIN해서  3개의 테이블을 조인한 서브쿼리b랑 board테이블을 RIGHT OUTER JOIN한 쿼리입니다.-->
+<!-- fun게시판같은 경우는 기존 쿼리 전체를 A로 묶고 댓글갯수를 가져오는 쿼리랑 
+풀 아우터 조인해서 A쿼리에서 null값을 가져오는 부분(BEST,WORST 게시판의 댓글 갯수가 출력되는 부분)을 제외하고 전체 board리스트들을 가져오는 쿼리입니다.-->
+</mapper>

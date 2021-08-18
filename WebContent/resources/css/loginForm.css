@@ -1,0 +1,24 @@
+@charset "UTF-8";
+div.check1{
+	width: 50%;
+	height: 20px;
+	float:left;
+}
+div.check2{
+	width: 50%;
+	height: 20px;
+	float:right;
+}
+div.find{
+	position:absolute;
+	left:95px;
+}
+div.join{
+	position:relative;
+	top:25px;
+	left:10px;
+}
+div.cktree{
+	position:relative;
+	top:25px;
+}
